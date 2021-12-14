@@ -8,7 +8,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/virtualitech/vrs-db.git"
+		"url": "git+https://github.com/virtualitech/vrs-utils.git"
 	},
 	"keywords": [
 		"virtualriskspace",
@@ -17,9 +17,9 @@
 	"author": "Cemal Can Efe <cemal.efe@virtualitechnologies.com>",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/virtualitech/vrs-db/issues"
+		"url": "https://github.com/virtualitech/vrs-utils/issues"
 	},
-	"homepage": "https://github.com/virtualitech/vrs-db#readme",
+	"homepage": "https://github.com/virtualitech/vrs-utils#readme",
 	"dependencies": {
 		"@google-cloud/secret-manager": "^3.10.1",
 		"moment-timezone": "^0.5.34",
