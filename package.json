@@ -1,29 +1,29 @@
 {
-	"name": "vrs-utils",
-	"version": "1.0.0",
-	"description": "Common VRS utilities",
-	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/virtualitech/vrs-utils.git"
-	},
-	"keywords": [
-		"virtualriskspace",
-		"postgres"
-	],
-	"author": "Cemal Can Efe <cemal.efe@virtualitechnologies.com>",
-	"license": "ISC",
-	"bugs": {
-		"url": "https://github.com/virtualitech/vrs-utils/issues"
-	},
-	"homepage": "https://github.com/virtualitech/vrs-utils#readme",
-	"dependencies": {
-		"@google-cloud/secret-manager": "^3.10.1",
-		"moment-timezone": "^0.5.34",
-		"pg": "8.5.1",
-		"uuid": "8.3.2"
-	}
+    "name": "vrs-utils",
+    "version": "1.0.0",
+    "description": "Common VRS utilities",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/virtualitech/vrs-utils.git"
+    },
+    "keywords": [
+        "virtualriskspace",
+        "postgres"
+    ],
+    "author": "Cemal Can Efe <cemal.efe@virtualitechnologies.com>",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/virtualitech/vrs-utils/issues"
+    },
+    "homepage": "https://github.com/virtualitech/vrs-utils#readme",
+    "dependencies": {
+        "@google-cloud/secret-manager": "^3.10.1",
+        "moment-timezone": "^0.5.34",
+        "pg": "8.5.1",
+        "uuid": "8.3.2"
+    }
 }
