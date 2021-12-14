@@ -1,6 +1,7 @@
 const moment = require('moment-timezone');
 const pg = require('pg');
 const { validate, v4: uuidv4 } = require('uuid');
+const connections = require('./connections');
 const pool = new pg.Pool();
 
 pool.on('error', (err) => {
@@ -257,7 +258,7 @@ pool.production = {
 
 pool.connect = async function (cb, connection, ...restArgs) {
     // eslint-disable-next-line global-require
-    const connectionInfo = await require('./connections')();
+    const connectionInfo = await connections();
     let client;
 
     if (connection) {
