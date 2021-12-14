@@ -1,7 +1,7 @@
 {
-	"name": "vrs-db",
+	"name": "vrs-utils",
 	"version": "1.0.0",
-	"description": "Common db utilities",
+	"description": "Common VRS utilities",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
