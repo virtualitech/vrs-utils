@@ -1,4 +1,4 @@
-const { accessSecretVersion } = require('./secretmanager');
+const { accessSecretVersion } = require('../secretmanager');
 
 let connectionInfo = null;
 
