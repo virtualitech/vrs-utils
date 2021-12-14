@@ -257,7 +257,7 @@ pool.production = {
 
 pool.connect = async function (cb, connection, ...restArgs) {
     // eslint-disable-next-line global-require
-    const { connectionInfo } = await require('./connections');
+    const connectionInfo = await require('./connections')();
     let client;
 
     if (connection) {

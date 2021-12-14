@@ -1,18 +1,11 @@
-const { accessSecretVersion } = require('../secretmanager');
-
+const secretManager = require('../secretmanager');
 let connectionInfo = null;
 
-async function getConnection() {
+module.exports = async function () {
     if (!connectionInfo) {
-        const connections = await accessSecretVersion('projects/1088752406703/secrets/connections/versions/latest');
-        const jsonConn = JSON.parse(connections);
-        connectionInfo = jsonConn;
+        const connections = await secretManager('projects/1088752406703/secrets/connections/versions/latest');
+        connectionInfo = JSON.parse(connections);
     }
 
     return connectionInfo;
-}
-
-module.exports = (async function () {
-    await getConnection();
-    return { connectionInfo };
-})();
+};

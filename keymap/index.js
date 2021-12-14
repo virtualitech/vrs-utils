@@ -1,14 +1,11 @@
-const { accessSecretVersion } = require('../secretmanager');
-
+const secretManager = require('../secretmanager');
 let keys = null;
 
-async function init() {
+module.exports = async function () {
     if (!keys) {
-        const map = await accessSecretVersion('projects/1088752406703/secrets/keymap/versions/latest');
+        const map = await secretManager('projects/1088752406703/secrets/keymap/versions/latest');
         keys = JSON.parse(map);
     }
 
     return keys;
-}
-
-module.exports = { init };
+};
