@@ -1,22 +1,22 @@
-const moment = require('moment-timezone');
-const pg = require('pg');
-const { validate, v4: uuidv4 } = require('uuid');
-const connections = require('./connections');
+const moment = require("moment-timezone");
+const pg = require("pg");
+const { validate, v4: uuidv4 } = require("uuid");
+const connections = require("./connections");
 const pool = new pg.Pool({ connectionTimeoutMillis: 10000 });
 
-pool.on('error', (err) => {
+pool.on("error", (err) => {
     console.error(err.stack);
 });
 
 const nullable = function (v) {
-    return typeof v === 'undefined' ? null : v;
+    return typeof v === "undefined" ? null : v;
 };
 
 const paramUUID = function (v, insecure) {
     v = nullable(v);
 
     if (v !== null && !validate(v)) {
-        throw new Error('DB param is not UUID');
+        throw new Error("DB param is not UUID");
     }
 
     if (v === null) {
@@ -31,7 +31,7 @@ const paramUUIDArray = function (v, insecure) {
 
     if (!Array.isArray(v)) {
         // eslint-disable-next-line sonarjs/no-duplicate-string
-        throw new Error('DB param is not an array');
+        throw new Error("DB param is not an array");
     }
 
     v = [].concat(v);
@@ -49,8 +49,8 @@ const paramString = function (v, insecure) {
     if (v !== null) {
         v = String(v);
 
-        if (typeof v !== 'string') {
-            throw new Error('DB param is not string');
+        if (typeof v !== "string") {
+            throw new Error("DB param is not string");
         }
     }
 
@@ -58,7 +58,7 @@ const paramString = function (v, insecure) {
         return null;
     }
 
-    return v !== '' && insecure !== true ? `$$${v}$$` : v;
+    return v !== "" && insecure !== true ? `$$${v}$$` : v;
 };
 
 const paramNumeric = function (v) {
@@ -68,7 +68,7 @@ const paramNumeric = function (v) {
         v = Number(v);
 
         if (Number.isNaN(v)) {
-            throw new Error('DB param is not numeric');
+            throw new Error("DB param is not numeric");
         }
     }
 
@@ -78,14 +78,14 @@ const paramNumeric = function (v) {
 const paramBoolean = function (v) {
     v = nullable(v);
 
-    if (v === 'true') {
+    if (v === "true") {
         v = true;
-    } else if (v === 'false') {
+    } else if (v === "false") {
         v = false;
     }
 
     if (v !== true && v !== false) {
-        throw new Error('DB param is not boolean');
+        throw new Error("DB param is not boolean");
     }
 
     return v;
@@ -115,7 +115,7 @@ const paramNumericArray = function (v) {
     v = nullable(v);
 
     if (!Array.isArray(v)) {
-        throw new Error('DB param is not an array');
+        throw new Error("DB param is not an array");
     }
 
     v = [].concat(v);
@@ -131,7 +131,7 @@ const paramStringArray = function (v) {
     v = nullable(v);
 
     if (!Array.isArray(v)) {
-        throw new Error('DB param is not an array');
+        throw new Error("DB param is not an array");
     }
 
     v = [].concat(v);
@@ -153,9 +153,9 @@ const queryFirst = function (q, v = null) {
 
 const queryFile = function (client, sql) {
     const queries = sql
-        .replace(/(\r\n|\n|\r)/gm, ' ') // remove newlines
-        .replace(/\s+/g, ' ') // excess white space
-        .split(';') // split into all statements
+        .replace(/(\r\n|\n|\r)/gm, " ") // remove newlines
+        .replace(/\s+/g, " ") // excess white space
+        .split(";") // split into all statements
         .map(Function.prototype.call, String.prototype.trim)
         .filter((el) => el.length !== 0); // remove any empty ones
 
@@ -172,10 +172,9 @@ pool.master = {
         let result;
 
         try {
-            client = await pool.connect(null, 'master');
+            client = await pool.connect(null, "master");
             result = await client.query(q);
         } catch (err) {
-            Logger.error(err.message, err);
             throw err;
         } finally {
             if (client) {
@@ -195,10 +194,9 @@ pool.demo = {
         let result;
 
         try {
-            client = await pool.connect(null, 'demo'); // localde demo_from_local olacak
+            client = await pool.connect(null, "demo"); // localde demo_from_local olacak
             result = await client.query(q);
         } catch (err) {
-            Logger.error(err);
             throw err;
         } finally {
             if (client) {
@@ -218,10 +216,9 @@ pool.stage = {
         let result;
 
         try {
-            client = await pool.connect(null, 'stage'); // localde development olacak
+            client = await pool.connect(null, "stage"); // localde development olacak
             result = await client.query(q);
         } catch (err) {
-            Logger.error(err);
             throw err;
         } finally {
             if (client) {
@@ -241,10 +238,9 @@ pool.production = {
         let result;
 
         try {
-            client = await pool.connect(null, 'production_cloudsql'); //  localde production(ipli) olacak
+            client = await pool.connect(null, "production_cloudsql"); //  localde production(ipli) olacak
             result = await client.query(q);
         } catch (err) {
-            Logger.error(err);
             throw err;
         } finally {
             if (client) {
@@ -266,7 +262,7 @@ pool.connect = async function (cb, connection, ...restArgs) {
         client = new pg.Client(connection);
         await client.connect();
     } else {
-        connection = connectionInfo[process.env.DB_ENV || 'development'];
+        connection = connectionInfo[process.env.DB_ENV || "development"];
         pool.options = Object.assign(pool.options, connection);
         client = await connect.apply(this, [cb, connection, ...restArgs]);
     }
