@@ -2,7 +2,7 @@ const moment = require('moment-timezone');
 const pg = require('pg');
 const { validate, v4: uuidv4 } = require('uuid');
 const connections = require('./connections');
-const pool = new pg.Pool();
+const pool = new pg.Pool({ connectionTimeoutMillis: 10000 });
 
 pool.on('error', (err) => {
     console.error(err.stack);
