@@ -1,6 +1,5 @@
 const moment = require("moment-timezone");
 const pg = require("pg");
-const SQL = require("sql-template-strings");
 const { validate, v4: uuidv4 } = require("uuid");
 const connections = require("./connections");
 const pool = new pg.Pool({ connectionTimeoutMillis: 10000 });
@@ -163,11 +162,7 @@ const queryFile = function (client, sql) {
     return Promise.all(queries.map((query) => client.query(query)));
 };
 
-const { connect, query } = pool;
-
-pool.query = function (q) {
-    return query.call(this, SQL`${q}`);
-};
+const { connect } = pool;
 
 pool.master = {
     queryRows,
@@ -273,10 +268,6 @@ pool.connect = async function (cb, connection, ...restArgs) {
     }
 
     if (client) {
-        const _query = client.query;
-        client.query = function (q) {
-            return _query.call(this, SQL`${q}`);
-        };
         client.string = paramString;
         client.stringArray = paramStringArray;
         client.numeric = paramNumeric;
