@@ -24,6 +24,7 @@
         "@google-cloud/secret-manager": "^3.10.1",
         "moment-timezone": "^0.5.34",
         "pg": "8.5.1",
+        "sql-template-strings": "^2.2.2",
         "uuid": "8.3.2"
     }
 }
