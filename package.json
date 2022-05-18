@@ -1,6 +1,6 @@
 {
     "name": "vrs-utils",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Common VRS utilities",
     "main": "index.js",
     "scripts": {
