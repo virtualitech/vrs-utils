@@ -288,6 +288,17 @@ pool.connect = async function (cb, connection, ...restArgs) {
                 return uuidv4();
             },
         };
+        client.begin = function () {
+            return client.query('begin');
+        };
+        client.commit = async function () {
+            await client.query('commit');
+            return client.release();
+        };
+        client.rollback = async function () {
+            await client.query('rollback');
+            return client.release();
+        };
     }
 
     return client;
