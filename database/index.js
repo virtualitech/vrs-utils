@@ -2,9 +2,11 @@ const moment = require("moment-timezone");
 const pg = require("pg");
 const { validate, v4: uuidv4 } = require("uuid");
 const connections = require("./connections");
-const pool = new pg.Pool({ connectionTimeoutMillis: 10000 });
+const pool = new pg.Pool({ connectionTimeoutMillis: 10000,max: 100 });
+const poolForLog = new pg.Pool({ connectionTimeoutMillis: 10000,max: 10 });
 
 pool.on("error", (err) => {
+    console.log('[POOL ERROR]');
     console.error(err.stack);
 });
 
@@ -164,6 +166,34 @@ const queryFile = function (client, sql) {
 
 const { connect } = pool;
 
+//musa
+poolForLog.forLog = {
+    string : paramString,
+    json : paramJson,
+    async query(q) {
+        // eslint-disable-next-line global-require
+        const connectionInfo = await connections();
+
+        let client;
+        let result;
+        let connection;
+
+        try {
+            connection = connectionInfo[process.env.DB_ENV || "development"];
+            client = new pg.Client(connection);
+            await client.connect();
+            result = await client.query(q);
+        } catch (err) {
+            throw err;
+        } finally {
+            if (client) {
+                client.end();
+            }
+        }
+        return result;
+    },    
+}
+
 pool.master = {
     queryRows,
     queryFirst,
@@ -257,6 +287,9 @@ pool.connect = async function (cb, connection, ...restArgs) {
     const connectionInfo = await connections();
     let client;
 
+    // console.log('[DB POOL]' + ' TOTAL:'+ pool.totalCount + ' IDLE:' + pool.idleCount + ' EXPIRED:' + pool.expiredCount + ' WAITING:' + pool.waitingCount);
+    // console.log('[DB CLIENT TOTAL]' + pool._clients?.length);
+
     if (connection) {
         connection = connectionInfo[connection];
         client = new pg.Client(connection);
@@ -264,7 +297,21 @@ pool.connect = async function (cb, connection, ...restArgs) {
     } else {
         connection = connectionInfo[process.env.DB_ENV || "development"];
         pool.options = Object.assign(pool.options, connection);
-        client = await connect.apply(this, [cb, connection, ...restArgs]);
+        try {
+            client = await connect.apply(this, [cb, connection, ...restArgs]);
+        } catch(err){
+            try{
+                console.log('err : ' + err);
+                let result = await poolForLog.forLog.query(`SELECT pid,state, client_addr,age(clock_timestamp(), query_start), usename, datname,query
+                FROM pg_stat_activity ORDER BY query_start desc;`);
+                let json = result?.rows;
+                await poolForLog.forLog.query(`insert into db_log (session_log) values (${poolForLog.forLog.json(json)});`);
+            } catch(err){
+                console.log('err : ' + err);
+                console.log('[DB POOL]' + ' TOTAL:'+ pool?.totalCount + ' IDLE:' + pool?.idleCount + ' EXPIRED:' + pool?.expiredCount + ' WAITING:' + pool?.waitingCount);
+                console.log('[DB CLIENT TOTAL]' + pool?._clients?.length);
+            }
+        }
     }
 
     if (client) {
