@@ -2,11 +2,8 @@ const moment = require("moment-timezone");
 const pg = require("pg");
 const { validate, v4: uuidv4 } = require("uuid");
 const connections = require("./connections");
-const pool = new pg.Pool({ connectionTimeoutMillis: 10000 });
-
-pool.on("error", (err) => {
-    console.error(err.stack);
-});
+const pools = {};
+const defaultConfig = { connectionTimeoutMillis: 10000 };
 
 const nullable = function (v) {
     return typeof v === "undefined" ? null : v;
@@ -162,168 +159,106 @@ const queryFile = function (client, sql) {
     return Promise.all(queries.map((query) => client.query(query)));
 };
 
-const { connect } = pool;
+const connect = pg.Pool.prototype.connect;
 
-pool.master = {
-    queryRows,
-    queryFirst,
-    async query(q) {
-        let client;
-        let result;
+Object.assign(pg.Pool.prototype, {
+    string: paramString,
+    stringArray: paramStringArray,
+    numeric: paramNumeric,
+    numericArray: paramNumericArray,
+    number: paramNumeric,
+    numberArray: paramNumericArray,
+    uuid: paramUUID,
+    uuidArray: paramUUIDArray,
+    boolean: paramBoolean,
+    bool: paramBoolean,
+    dateFormat: paramDateFormat,
+    date: paramDate,
+    json: paramJson,
+    queryRows: queryRows,
+    queryFirst: queryFirst,
+    queryFile: queryFile,
+    new: {
+        uuid() {
+            return uuidv4();
+        },
+    },
+    configured: false,
+    async connect(callback) {
+        if (!this.configured) {
+            const cons = await connections();
+            const key = this.options.key;
 
-        try {
-            client = await pool.connect(null, "master");
-            result = await client.query(q);
-        } catch (err) {
-            throw err;
-        } finally {
-            if (client) {
-                client.end();
+            if (!key) {
+                throw new Error('No db connection key found');
             }
+
+            const config = cons[key];
+
+            if (!config) {
+                throw new Error('No db connection config found: ' + key);
+            }
+
+            pools[key] = this;
+
+            this.on("error", (err) => {
+                console.error(err.message);
+            });
+
+            this.options = Object.assign(this.options, config);
+            this.configured = true;
         }
 
-        return result;
+        return connect.call(this, callback);
+    }
+});
+
+Object.assign(pg.Client.prototype, {
+    string: paramString,
+    stringArray: paramStringArray,
+    numeric: paramNumeric,
+    uuid: paramUUID,
+    uuidArray: paramUUIDArray,
+    numericArray: paramNumericArray,
+    number: paramNumeric,
+    numberArray: paramNumericArray,
+    boolean: paramBoolean,
+    bool: paramBoolean,
+    dateFormat: paramDateFormat,
+    date: paramDate,
+    json: paramJson,
+    queryRows: queryRows,
+    queryFirst: queryFirst,
+    new: {
+        uuid() {
+            return uuidv4();
+        },
     },
-};
-
-pool.demo = {
-    queryRows,
-    queryFirst,
-    async query(q) {
-        let client;
-        let result;
-
-        try {
-            client = await pool.connect(null, "demo"); // localde demo_from_local olacak
-            result = await client.query(q);
-        } catch (err) {
-            throw err;
-        } finally {
-            if (client) {
-                client.end();
-            }
-        }
-
-        return result;
+    begin() {
+        return this.query('begin');
     },
-};
-
-pool.stage = {
-    queryRows,
-    queryFirst,
-    async query(q) {
-        let client;
-        let result;
-
-        try {
-            client = await pool.connect(null, "stage"); // localde development olacak
-            result = await client.query(q);
-        } catch (err) {
-            throw err;
-        } finally {
-            if (client) {
-                client.end();
-            }
-        }
-
-        return result;
+    async commit() {
+        await this.query('commit');
+        return this.release();
     },
-};
+    async rollback() {
+        await this.query('rollback');
+        return this.release();
+    }
+});
 
-pool.production = {
-    queryRows,
-    queryFirst,
-    async query(q) {
-        let client;
-        let result;
+const defaultPool = new pg.Pool(Object.assign({ key: process.env.DB_ENV || "development" }, defaultConfig));
 
-        try {
-            client = await pool.connect(null, "production_cloudsql"); //  localde production(ipli) olacak
-            result = await client.query(q);
-        } catch (err) {
-            throw err;
-        } finally {
-            if (client) {
-                client.end();
-            }
-        }
+defaultPool.pool = async function (key) {
+    let pool = pools[key];
 
-        return result;
-    },
-};
-
-pool.connect = async function (cb, connection, ...restArgs) {
-    // eslint-disable-next-line global-require
-    const connectionInfo = await connections();
-    let client;
-
-    if (connection) {
-        connection = connectionInfo[connection];
-        client = new pg.Client(connection);
-        await client.connect();
-    } else {
-        connection = connectionInfo[process.env.DB_ENV || "development"];
-        pool.options = Object.assign(pool.options, connection);
-        client = await connect.apply(this, [cb, connection, ...restArgs]);
+    if (pool) {
+        return pool;
     }
 
-    if (client) {
-        client.string = paramString;
-        client.stringArray = paramStringArray;
-        client.numeric = paramNumeric;
-        client.uuid = paramUUID;
-        client.uuidArray = paramUUIDArray;
-        client.numericArray = paramNumericArray;
-        client.number = paramNumeric;
-        client.numberArray = paramNumericArray;
-        client.boolean = paramBoolean;
-        client.bool = paramBoolean;
-        client.dateFormat = paramDateFormat;
-        client.date = paramDate;
-        client.json = paramJson;
-        client.queryRows = queryRows;
-        client.queryFirst = queryFirst;
-        client.new = {
-            uuid() {
-                return uuidv4();
-            },
-        };
-        client.begin = function () {
-            return client.query('begin');
-        };
-        client.commit = async function () {
-            await client.query('commit');
-            return client.release();
-        };
-        client.rollback = async function () {
-            await client.query('rollback');
-            return client.release();
-        };
-    }
+    pool = new pg.Pool(Object.assign({ key }, defaultConfig));
 
-    return client;
+    return pool;
 };
 
-pool.string = paramString;
-pool.stringArray = paramStringArray;
-pool.numeric = paramNumeric;
-pool.numericArray = paramNumericArray;
-pool.number = paramNumeric;
-pool.numberArray = paramNumericArray;
-pool.uuid = paramUUID;
-pool.uuidArray = paramUUIDArray;
-pool.boolean = paramBoolean;
-pool.bool = paramBoolean;
-pool.dateFormat = paramDateFormat;
-pool.date = paramDate;
-pool.json = paramJson;
-pool.queryRows = queryRows;
-pool.queryFirst = queryFirst;
-pool.queryFile = queryFile;
-pool.new = {
-    uuid() {
-        return uuidv4();
-    },
-};
-
-module.exports = pool;
+module.exports = defaultPool;
