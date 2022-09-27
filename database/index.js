@@ -261,4 +261,12 @@ defaultPool.pool = async function (key) {
     return pool;
 };
 
+process.on('SIGTERM', () => {
+    Logger.warn('[SIGTERM CLEAR POOLS]');
+
+    for (var key in pools) {
+        pools[key].end();
+    }
+});
+
 module.exports = defaultPool;
