@@ -262,7 +262,7 @@ defaultPool.pool = async function (key) {
 };
 
 process.on('SIGTERM', () => {
-    Logger.warn('[SIGTERM CLEAR POOLS]');
+    console.warn('[SIGTERM CLEAR POOLS]');
 
     for (var key in pools) {
         pools[key].end();
