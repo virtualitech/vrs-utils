@@ -92,7 +92,7 @@ const paramDateFormat = function (v, tz) {
     v = nullable(v);
 
     if (v !== null) {
-        return tz ? moment.tz(v, tz).format('YYYY-MM-DD HH:mm:ss ZZ') : moment(v).format('YYYY-MM-DD HH:mm:ss');
+        return tz ? moment.tz(v, tz).format('YYYY-MM-DD HH:mm:ss ZZ') : moment(v).format('YYYY-MM-DD HH:mm:ss ZZ');
     }
 
     return null;
