@@ -179,34 +179,58 @@ Object.assign(pg.Pool.prototype, {
     queryFirst: queryFirst,
     queryFile: queryFile,
     new: {
-        uuid() {
+        uuid () {
             return uuidv4();
         },
     },
     configured: false,
-    async connect(callback) {
+    async connect (callback) {
         if (!this.configured) {
             const cons = await connections();
-            const key = this.options.key;
+            const { dbKey, key } = this.options;
 
-            if (!key) {
+            if (!dbKey) {
                 throw new Error('No db connection key found');
             }
 
-            const config = cons[key];
+            const config = cons[dbKey];
 
             if (!config) {
-                throw new Error('No db connection config found: ' + key);
+                throw new Error('No db connection config found: ' + dbKey);
             }
 
             pools[key] = this;
 
-            this.on("error", (err) => {
-                console.error(err.message);
+            this.on("error", async (err) => {
+                console.error('[DB POOL ERROR]', err.message);
             });
 
             this.options = Object.assign(this.options, config);
             this.configured = true;
+        }
+
+        if (this.totalCount === 10) {
+            try {
+                console.error('[DB POOL ERROR]' + ' TOTAL:' + this.totalCount + ' IDLE:' + this.idleCount + ' EXPIRED:' + this.expiredCount + ' WAITING:' + this.waitingCount);
+
+                const result = await logPool.queryRows(`
+                    SELECT pid,state, client_addr,age(clock_timestamp(), query_start), usename, datname,query
+                    FROM pg_stat_activity ORDER BY query_start desc;
+                `);
+
+                const dbLog = await logPool.queryFirst(`
+                    insert into db_log (session_log)
+                    values (${logPool.json(result)})
+                    returning id;
+                `);
+
+                console.error('[DB POOL ERROR]' + ' LOG ID: ' + dbLog.id);
+            }
+            catch (err) {
+                console.error('[DB LOG POOL ERROR]', err.message);
+                console.error('[DB LOG POOL ERROR]' + ' TOTAL:' + this.totalCount + ' IDLE:' + this.idleCount + ' EXPIRED:' + this.expiredCount + ' WAITING:' + this.waitingCount);
+                console.error('[DB LOG POOL ERROR]' + this._clients?.length);
+            }
         }
 
         return connect.call(this, callback);
@@ -230,24 +254,25 @@ Object.assign(pg.Client.prototype, {
     queryRows: queryRows,
     queryFirst: queryFirst,
     new: {
-        uuid() {
+        uuid () {
             return uuidv4();
         },
     },
-    begin() {
+    begin () {
         return this.query('begin');
     },
-    async commit() {
+    async commit () {
         await this.query('commit');
         return this.release();
     },
-    async rollback() {
+    async rollback () {
         await this.query('rollback');
         return this.release();
     }
 });
 
-const defaultPool = new pg.Pool(Object.assign({ key: process.env.DB_ENV || "development" }, defaultConfig));
+const defaultPool = new pg.Pool(Object.assign({ dbKey: process.env.DB_ENV || "development", key: process.env.DB_ENV || "development" }, defaultConfig));
+const logPool = new pg.Pool(Object.assign({ dbKey: process.env.DB_ENV || "development", key: 'log' }, defaultConfig));
 
 defaultPool.pool = async function (key) {
     let pool = pools[key];
@@ -256,7 +281,7 @@ defaultPool.pool = async function (key) {
         return pool;
     }
 
-    pool = new pg.Pool(Object.assign({ key }, defaultConfig));
+    pool = new pg.Pool(Object.assign({ dbKey: key, key }, defaultConfig));
 
     return pool;
 };
