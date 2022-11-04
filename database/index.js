@@ -3,7 +3,16 @@ const pg = require("pg");
 const { validate, v4: uuidv4 } = require("uuid");
 const connections = require("./connections");
 const pools = {};
-const defaultConfig = { connectionTimeoutMillis: 10000 };
+const defaultConfig = {
+    connectionTimeoutMillis: 300000, // default 0 - no timeout
+    idleTimeoutMillis: 10000, // default 10000
+
+    // PostgreSQL settings
+    statement_timeout: 300000,  // default false - no timeout
+    lock_timeout: 300000,  // default false - no timeout
+    idle_in_transaction_session_timeout: 300000, // default false - no timeout
+    query_timeout: 300000, // default false - no timeout
+};
 
 const nullable = function (v) {
     return typeof v === "undefined" ? null : v;
@@ -159,7 +168,8 @@ const queryFile = function (client, sql) {
     return Promise.all(queries.map((query) => client.query(query)));
 };
 
-const connect = pg.Pool.prototype.connect;
+const poolConnect = pg.Pool.prototype.connect;
+const clientConnect = pg.Client.prototype.connect;
 
 Object.assign(pg.Pool.prototype, {
     string: paramString,
@@ -184,6 +194,7 @@ Object.assign(pg.Pool.prototype, {
         },
     },
     configured: false,
+    logMaxClientError: 0,
     async connect (callback) {
         if (!this.configured) {
             const cons = await connections();
@@ -209,31 +220,31 @@ Object.assign(pg.Pool.prototype, {
             this.configured = true;
         }
 
-        if (this.totalCount === 10) {
+        if (this.totalCount === this.options.max) {
             try {
-                console.error('[DB POOL ERROR]' + ' TOTAL:' + this.totalCount + ' IDLE:' + this.idleCount + ' EXPIRED:' + this.expiredCount + ' WAITING:' + this.waitingCount);
+                const now = Date.now();
+
+                if ((now - this.logMaxClientError) < 60000) {
+                    throw new Error('Already logged in a minute');
+                }
+
+                this.logMaxClientError = now;
+
+                console.error('[DB POOL ERROR]', `TOTAL:${this.totalCount} IDLE:${this.idleCount} EXPIRED:${this.expiredCount} WAITING:${this.waitingCount}`);
 
                 const result = await logPool.queryRows(`
                     SELECT pid,state, client_addr,age(clock_timestamp(), query_start), usename, datname,query
                     FROM pg_stat_activity ORDER BY query_start desc;
                 `);
 
-                const dbLog = await logPool.queryFirst(`
-                    insert into db_log (session_log)
-                    values (${logPool.json(result)})
-                    returning id;
-                `);
-
-                console.error('[DB POOL ERROR]' + ' LOG ID: ' + dbLog.id);
+                console.error('[DB POOL ERROR]', result);
             }
             catch (err) {
-                console.error('[DB LOG POOL ERROR]', err.message);
-                console.error('[DB LOG POOL ERROR]' + ' TOTAL:' + this.totalCount + ' IDLE:' + this.idleCount + ' EXPIRED:' + this.expiredCount + ' WAITING:' + this.waitingCount);
-                console.error('[DB LOG POOL ERROR]' + this._clients?.length);
+                console.error('[DB LOG POOL ERROR]', `CLIENTS:${this._clients?.length}`, err.message);
             }
         }
 
-        return connect.call(this, callback);
+        return poolConnect.call(this, callback);
     }
 });
 
@@ -268,6 +279,12 @@ Object.assign(pg.Client.prototype, {
     async rollback () {
         await this.query('rollback');
         return this.release();
+    },
+    async connect (callback) {
+        this.on("error", async (err) => {
+            console.error('[DB CLIENT ERROR]', err.message);
+        });
+        return clientConnect.call(this, callback);
     }
 });
 
