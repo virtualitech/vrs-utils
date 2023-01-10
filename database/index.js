@@ -90,7 +90,7 @@ const paramBoolean = function (v) {
         v = false;
     }
 
-    if (v !== true && v !== false) {
+    if (v !== true && v !== false && v !== null) {
         throw new Error("DB param is not boolean");
     }
 
