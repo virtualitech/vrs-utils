@@ -2,6 +2,7 @@ const db = require('./database');
 const con = require('./database/connections');
 const sm = require('./secretmanager');
 const km = require('./keymap');
+const lg = require('./logger');
 const lib = require('./lib');
 
 module.exports = {
@@ -13,5 +14,6 @@ module.exports = {
     database: db,
     connections: con,
     secretmanager: sm,
-    keymap: km
+    keymap: km,
+    logger: lg
 };
