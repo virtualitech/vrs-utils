@@ -1,19 +1,21 @@
-const db = require('./database');
-const con = require('./database/connections');
-const sm = require('./secretmanager');
-const km = require('./keymap');
-const lg = require('./logger');
+const database = require('./database');
+const connections = require('./database/connections');
+const secretmanager = require('./secretmanager');
+const keymap = require('./keymap');
+const logger = require('./logger');
+const storage = require('./storage');
 const lib = require('./lib');
 
 module.exports = {
-    db,
-    con,
-    sm,
-    km,
+    db: database,
+    con: connections,
+    sm: secretmanager,
+    km: keymap,
     lib,
-    database: db,
-    connections: con,
-    secretmanager: sm,
-    keymap: km,
-    logger: lg
+    database,
+    connections,
+    secretmanager,
+    keymap,
+    logger,
+    storage
 };

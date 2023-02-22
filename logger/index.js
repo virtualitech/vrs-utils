@@ -1,29 +1,21 @@
 "use strict";
 
-const Console = require('console').Console;
-
-class Logger extends Console {
-    constructor(stdout, stderr, ...otherArgs) {
-        super(stdout, stderr, ...otherArgs);
+class Logger {
+    log (...args) {
+        console.log((new Date()).toISOString(), ...args);
     }
 
-    log(...args) {
-        super.log((new Date()).toISOString(), ...args);
+    info (...args) {
+        console.info((new Date()).toISOString(), ...args);
     }
 
-    info(...args) {
-        super.info((new Date()).toISOString(), ...args);
+    error (...args) {
+        console.error((new Date()).toISOString(), ...args);
     }
 
-    error(...args) {
-        super.error((new Date()).toISOString(), ...args);
-    }
-
-    warn(...args) {
-        super.warn((new Date()).toISOString(), ...args);
+    warn (...args) {
+        console.warn((new Date()).toISOString(), ...args);
     }
 }
 
-module.exports = (function () {
-    return new Logger(process.stdout, process.stderr);
-}());
+module.exports = new Logger();
