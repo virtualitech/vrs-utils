@@ -1,35 +1,41 @@
 {
-    "name": "vrs-utils",
-    "version": "1.7.0",
-    "description": "Common VRS utilities",
-    "main": "index.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/virtualitech/vrs-utils.git"
-    },
-    "keywords": [
-        "virtualriskspace",
-        "postgres"
-    ],
-    "author": "Cemal Can Efe <cemal.efe@virtualitechnologies.com>",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/virtualitech/vrs-utils/issues"
-    },
-    "homepage": "https://github.com/virtualitech/vrs-utils#readme",
-    "dependencies": {
-        "@aws-sdk/client-s3": "^3.276.0",
-        "@aws-sdk/node-http-handler": "^3.272.0",
-        "@aws-sdk/s3-request-presigner": "^3.276.0",
-        "@google-cloud/secret-manager": "^3.10.1",
-        "@google-cloud/storage": "^6.9.3",
-        "form-data": "^4.0.0",
-        "moment-timezone": "^0.5.34",
-        "pg": "8.8.0",
-        "sql-template-strings": "^2.2.2",
-        "uuid": "8.3.2"
-    }
+	"name": "vrs-utils",
+	"version": "1.7.3",
+	"description": "Common VRS utilities",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "tsc"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/virtualitech/vrs-utils.git"
+	},
+	"keywords": [
+		"vrs",
+		"virtualriskspace",
+		"virtuali"
+	],
+	"author": "Cemal Can Efe <cemal.efe@virtualitechnologies.com>",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/virtualitech/vrs-utils/issues"
+	},
+	"homepage": "https://github.com/virtualitech/vrs-utils#readme",
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.276.0",
+		"@aws-sdk/node-http-handler": "^3.272.0",
+		"@aws-sdk/s3-request-presigner": "^3.276.0",
+		"@google-cloud/secret-manager": "^3.10.1",
+		"@google-cloud/storage": "^6.9.3",
+		"form-data": "^4.0.0",
+		"moment-timezone": "^0.5.34",
+		"pg": "8.8.0",
+		"sql-template-strings": "^2.2.2",
+		"uuid": "8.3.2"
+	},
+	"devDependencies": {
+		"typescript": "^4.9.5"
+	}
 }

@@ -1,0 +1,23 @@
+.DS_Store
+node_modules
+src
+npm-debug.log*
+package-lock.json
+
+.yarn
+yarn.lock
+yarn-debug.log*
+yarn-error.log*
+
+src
+tsconfig.json
+tslint.json
+.prettierrc
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
