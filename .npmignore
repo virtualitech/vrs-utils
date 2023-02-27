@@ -5,6 +5,7 @@ npm-debug.log*
 package-lock.json
 
 .yarn
+.yarnrc.yml
 yarn.lock
 yarn-debug.log*
 yarn-error.log*
@@ -17,6 +18,7 @@ tslint.json
 # Editor directories and files
 .idea
 .vscode
+.editorconfig
 *.suo
 *.ntvs*
 *.njsproj
