@@ -6,6 +6,7 @@ const pools = {};
 const defaultConfig = {
     connectionTimeoutMillis: 300000, // default 0 - no timeout
     idleTimeoutMillis: 10000, // default 10000
+	timezone: "UTC",
 
     // PostgreSQL settings
     statement_timeout: 300000,  // default false - no timeout
