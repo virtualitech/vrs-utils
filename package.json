@@ -1,6 +1,6 @@
 {
 	"name": "vrs-utils",
-	"version": "1.8.0",
+	"version": "1.8.1",
 	"description": "Common VRS utilities",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
