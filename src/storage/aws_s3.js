@@ -131,6 +131,7 @@ async function updateObjectMetadata(tenantId, filePath) {
             Key: `${tenantId}/${filePath}`,
             CopySource: `/${process.env.AWS_BUCKET}/${tenantId}/${filePath}`,
             ContentType: file.ContentType,
+			ContentLength: file.ContentLength,
             ContentDisposition: file.ContentDisposition,
             CacheControl: file.CacheControl,
             MetadataDirective: 'REPLACE',
@@ -141,7 +142,7 @@ async function updateObjectMetadata(tenantId, filePath) {
     );
 }
 
-function uploadObject({ fileStream, tenantId, filePath, fileName, mimeType, ownerId, fileId, metadata }) {
+function uploadObject({ fileStream, tenantId, filePath, fileName, fileSize, mimeType, ownerId, fileId, metadata }) {
     if (typeof metadata === 'object') {
         for (var p in metadata) {
             metadata[p] = String(metadata[p]);
@@ -153,6 +154,7 @@ function uploadObject({ fileStream, tenantId, filePath, fileName, mimeType, owne
             Bucket: process.env.AWS_BUCKET,
             Key: `${tenantId}/${filePath}`,
             Body: fileStream,
+			ContentLength: fileSize,
             ContentType: mimeType || 'application/octet-stream',
             ContentDisposition: `attachment; filename=${fileName}`,
             CacheControl: 'public, max-age=31536000',
