@@ -2307,13 +2307,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql-template-strings@npm:^2.2.2":
-  version: 2.2.2
-  resolution: "sql-template-strings@npm:2.2.2"
-  checksum: 8155143269134564e9f13203b51da965d7c24dab25278fbd028f2dd2e03aec48d77931f7100245d04b6e3a90c4cf131575c852adf6c91a405e30c8869e055c52
-  languageName: node
-  linkType: hard
-
 "stream-events@npm:^1.0.5":
   version: 1.0.5
   resolution: "stream-events@npm:1.0.5"
@@ -2465,7 +2458,6 @@ __metadata:
     moment-timezone: ^0.5.34
     node-html-parser: ^6.1.5
     pg: 8.8.0
-    sql-template-strings: ^2.2.2
     typescript: ^4.9.5
     uuid: 8.3.2
   languageName: unknown
