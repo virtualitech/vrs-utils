@@ -93,14 +93,14 @@ async function updateObjectMetadata(tenantId, filePath) {
     });
 }
 
-function uploadObject({ fileStream, tenantId, filePath, fileName, mimeType, ownerId, fileId, metadata }) {
+function uploadObject({ fileStream, tenantId, filePath, fileName, mimeType, ownerId, fileId, metadata, gzip = true }) {
     return new Promise((resolve, reject) => {
         const bucket = gcs.bucket(tenantId);
         const bucketFile = bucket.file(filePath);
 
         const bucketWriteStream = bucketFile.createWriteStream({
-            resumable: false,
-            gzip: true,
+            gzip,
+			resumable: false,
             metadata: {
                 contentType: mimeType || 'application/octet-stream',
                 contentDisposition: `attachment; filename=${fileName}`,
